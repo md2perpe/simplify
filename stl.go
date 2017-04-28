@@ -76,7 +76,7 @@ func SaveBinarySTL(path string, mesh *Mesh) error {
 	return nil
 }
 
-func LoadSTL(path string) (*Mesh, error) {
+func LoadAsciiSTL(path string) (*Mesh, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func LoadSTL(path string) (*Mesh, error) {
 	return NewMesh(triangles), scanner.Err()
 }
 
-func SaveSTL(path string, mesh *Mesh) error {
+func SaveAsciiSTL(path string, mesh *Mesh) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err

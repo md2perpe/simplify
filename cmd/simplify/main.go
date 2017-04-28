@@ -22,7 +22,7 @@ func main() {
 		return
 	}
 	fmt.Printf("Loading %s\n", args[0])
-	mesh, err := simplify.LoadSTL(args[0])
+	mesh, err := simplify.LoadAsciiSTL(args[0])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,5 +31,5 @@ func main() {
 	mesh = mesh.Simplify(factor)
 	fmt.Printf("Output mesh contains %d faces\n", len(mesh.Triangles))
 	fmt.Printf("Writing %s\n", args[1])
-	mesh.SaveSTL(args[1])
+	mesh.SaveAsciiSTL(args[1])
 }

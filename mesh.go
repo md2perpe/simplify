@@ -12,8 +12,8 @@ func (m *Mesh) SaveBinarySTL(path string) error {
 	return SaveBinarySTL(path, m)
 }
 
-func (m *Mesh) SaveSTL(path string) error {
-	return SaveSTL(path, m)
+func (m *Mesh) SaveAsciiSTL(path string) error {
+	return SaveAsciiSTL(path, m)
 }
 
 func (m *Mesh) Simplify(factor float64) *Mesh {
