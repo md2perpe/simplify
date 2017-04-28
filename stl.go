@@ -18,6 +18,44 @@ type STLTriangle struct {
 	_             uint16
 }
 
+type STLType struct {
+	Load func(string) (*Mesh, error)
+	Save func(string, *Mesh) error
+}
+
+func GetSTLType(path string) (STLType, error) {
+	file, err := os.Open(path)
+	defer file.Close()
+	if err != nil {
+		return STLType{}, err
+	}
+	
+	buf := make([]byte, 80)
+	
+	n, err := file.Read(buf)
+	if err != nil {
+		return STLType{}, err
+	}
+	
+	for i:=0; i<n; i++ {
+		if ! isAscii(buf[i]) {
+			return STLType{ LoadBinarySTL, SaveBinarySTL }, nil
+		}
+	}
+
+	return STLType{ LoadAsciiSTL, SaveAsciiSTL }, nil
+}
+
+func isAscii(b byte) bool {
+	return (
+	   b == '\n' || b == '\r' ||
+	   b == ' '  || b == '\t' ||
+	   b == '.'  || b == '-'  ||
+	   '0' <= b && b <= '9' ||
+	   'a' <= b && b <= 'z' ||
+	   'A' <= b && b <= 'Z' )
+}
+
 func LoadBinarySTL(path string) (*Mesh, error) {
 	file, err := os.Open(path)
 	if err != nil {
