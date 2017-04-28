@@ -3,6 +3,7 @@ package simplify
 import (
 	"bufio"
 	"encoding/binary"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -101,3 +102,29 @@ func LoadSTL(path string) (*Mesh, error) {
 	}
 	return NewMesh(triangles), scanner.Err()
 }
+
+func SaveSTL(path string, mesh *Mesh) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	fmt.Fprintf(file, "solid unnamed\n")
+	for _, triangle := range mesh.Triangles {
+		n := triangle.Normal()
+		v1, v2, v3 := triangle.V1, triangle.V2, triangle.V3
+
+		fmt.Fprintf(file, "  facet normal %f %f %f\n", n.X, n.Y, n.Z)
+		fmt.Fprintf(file, "    outer loop\n")
+		fmt.Fprintf(file, "      vertex %f %f %f\n", v1.X, v1.Y, v1.Z)
+                fmt.Fprintf(file, "      vertex %f %f %f\n", v2.X, v2.Y, v2.Z)
+                fmt.Fprintf(file, "      vertex %f %f %f\n", v3.X, v3.Y, v3.Z)
+		fmt.Fprintf(file, "    endloop\n")
+		fmt.Fprintf(file, "  endfacet\n")
+	}
+	fmt.Fprintf(file, "endsolid unnamed\n")
+
+	return nil
+}
+
