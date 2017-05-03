@@ -3,6 +3,7 @@ package simplify
 import (
 	"bufio"
 	"encoding/binary"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -15,6 +16,44 @@ type STLHeader struct {
 type STLTriangle struct {
 	N, V1, V2, V3 [3]float32
 	_             uint16
+}
+
+type STLType struct {
+	Load func(string) (*Mesh, error)
+	Save func(string, *Mesh) error
+}
+
+func GetSTLType(path string) (STLType, error) {
+	file, err := os.Open(path)
+	defer file.Close()
+	if err != nil {
+		return STLType{}, err
+	}
+	
+	buf := make([]byte, 80)
+	
+	n, err := file.Read(buf)
+	if err != nil {
+		return STLType{}, err
+	}
+	
+	for i:=0; i<n; i++ {
+		if ! isAscii(buf[i]) {
+			return STLType{ LoadBinarySTL, SaveBinarySTL }, nil
+		}
+	}
+
+	return STLType{ LoadAsciiSTL, SaveAsciiSTL }, nil
+}
+
+func isAscii(b byte) bool {
+	return (
+	   b == '\n' || b == '\r' ||
+	   b == ' '  || b == '\t' ||
+	   b == '.'  || b == '-'  ||
+	   '0' <= b && b <= '9' ||
+	   'a' <= b && b <= 'z' ||
+	   'A' <= b && b <= 'Z' )
 }
 
 func LoadBinarySTL(path string) (*Mesh, error) {
@@ -75,7 +114,7 @@ func SaveBinarySTL(path string, mesh *Mesh) error {
 	return nil
 }
 
-func LoadSTL(path string) (*Mesh, error) {
+func LoadAsciiSTL(path string) (*Mesh, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -101,3 +140,29 @@ func LoadSTL(path string) (*Mesh, error) {
 	}
 	return NewMesh(triangles), scanner.Err()
 }
+
+func SaveAsciiSTL(path string, mesh *Mesh) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	fmt.Fprintf(file, "solid unnamed\n")
+	for _, triangle := range mesh.Triangles {
+		n := triangle.Normal()
+		v1, v2, v3 := triangle.V1, triangle.V2, triangle.V3
+
+		fmt.Fprintf(file, "  facet normal %f %f %f\n", n.X, n.Y, n.Z)
+		fmt.Fprintf(file, "    outer loop\n")
+		fmt.Fprintf(file, "      vertex %f %f %f\n", v1.X, v1.Y, v1.Z)
+                fmt.Fprintf(file, "      vertex %f %f %f\n", v2.X, v2.Y, v2.Z)
+                fmt.Fprintf(file, "      vertex %f %f %f\n", v3.X, v3.Y, v3.Z)
+		fmt.Fprintf(file, "    endloop\n")
+		fmt.Fprintf(file, "  endfacet\n")
+	}
+	fmt.Fprintf(file, "endsolid unnamed\n")
+
+	return nil
+}
+

@@ -21,8 +21,14 @@ func main() {
 		fmt.Println("Usage: simplify [-f FACTOR] input.stl output.stl")
 		return
 	}
+
+	t, err := simplify.GetSTLType(args[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Printf("Loading %s\n", args[0])
-	mesh, err := simplify.LoadBinarySTL(args[0])
+	mesh, err := t.Load(args[0])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,5 +37,6 @@ func main() {
 	mesh = mesh.Simplify(factor)
 	fmt.Printf("Output mesh contains %d faces\n", len(mesh.Triangles))
 	fmt.Printf("Writing %s\n", args[1])
-	mesh.SaveBinarySTL(args[1])
+	
+	t.Save(args[1], mesh)
 }
