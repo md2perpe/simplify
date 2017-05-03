@@ -12,7 +12,7 @@ written in Go.
 
 ### Install
 
-    go get -u github.com/fogleman/simplify/cmd/simplify
+    go get -u github.com/md2perpe/simplify/cmd/simplify
 
 ### Command-Line Usage
 
